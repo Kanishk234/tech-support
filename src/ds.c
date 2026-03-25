@@ -17,21 +17,61 @@
 
 /* TODO 1 */
 Node *create_question_node(const char *question) {
-    return NULL;
+    Node* node = (Node*) malloc(sizeof(Node));
+    if (node == NULL) { return NULL; }
+
+    node->text = strdup(question);
+    if (node->text == NULL) { free(node); return NULL; }
+
+    node->yes = NULL; // yes and no ptrs to be updated after or before question node is created?
+    node->no = NULL;
+    node->isQuestion = 1;
+    return node;
 }
 
 /* TODO 2 */
 Node *create_solution_node(const char *solution) {
-    return NULL;
+    Node* node = (Node*) malloc(sizeof(Node));
+    if (node == NULL) { return NULL; }
+    
+    node->text = strdup(solution);
+    if (node->text == NULL) { free(node); return NULL; }
+
+    node->yes = NULL;
+    node->no = NULL;
+    node->isQuestion = 0;
+    return node;
 }
 
 /* TODO 3  (recursion allowed) */
 void free_tree(Node *node) {
+    // condition to prevent null derefs later
+    if (node == NULL) { return; }
+
+    // base case: free text of solution and then solution node itself
+    if (node->yes == NULL && node->no == NULL) {
+        free(node->text);
+        free(node);
+        return;
+    }
+    // recursive call on yes and no subtrees
+    free_tree(node->yes);
+    free_tree(node->no);
+    free(node->text);
+    free(node);
 }
 
 /* TODO 4  (recursion allowed) */
 int count_nodes(Node *root) {
-    return 0;
+    // needed in order for the next condition to run because root is derefed
+    if (root == NULL) { return 0; }
+
+    // base case: child node (solution leaf)
+    if (root->yes == NULL && root->no == NULL) {
+        return 1;
+    }
+    // recursive call on yes and no subtrees
+    return 1 + count_nodes(root->yes) + count_nodes(root->no);
 }
 
 
