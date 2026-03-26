@@ -79,25 +79,57 @@ int count_nodes(Node *root) {
 
 /* TODO 5 */
 void fs_init(FrameStack *s) {
+    if (s != NULL) {
+        // create the pointer? do nothing for now ig
+        // return;
+        s->frames = (Frame*) malloc(10 * sizeof(Frame));
+        if (s->frames == NULL) { return; }
+        s->size = 0;
+        s->capacity = 10; // default value to begin with
+    }  
 }
 
 /* TODO 6 */
 void fs_push(FrameStack *s, Node *node, int answeredYes) {
+    if (node == NULL || s == NULL || s->frames == NULL) { return; }
+
+    if (s->size == s->capacity) {
+        // copy array and increases capacity
+        Frame* moreFrames = (Frame*) realloc(s->frames, 2*s->capacity*sizeof(Frame));
+        // if realloc failes
+        if (moreFrames == NULL) { return; } 
+        s->frames = moreFrames;
+        s->capacity *= 2;
+    }
+    s->frames[s->size].node = node;
+    s->frames[s->size].answeredYes = answeredYes;
+    s->size++;
 }
 
 /* TODO 7 */
 Frame fs_pop(FrameStack *s) {
-    Frame dummy = {NULL, -1};
-    return dummy;
+    // if framestack is null or if framestack is empty
+    if (s == NULL || s->size <= 0) { return (Frame) {NULL, -1}; }
+    // if the frames array ptr is null
+    if (s->frames == NULL) { return (Frame) {NULL, -1}; }
+
+    s->size--; 
+    Frame popped = (s->frames)[s->size];
+    return popped;
 }
 
 /* TODO 8 */
 int fs_empty(FrameStack *s) {
-    return 1;
+    return (s == NULL || s->size <= 0) ? 1 : 0;
 }
 
 /* TODO 9 */
 void fs_free(FrameStack *s) {
+    if (!(s == NULL || s->frames == NULL)) {
+        free(s->frames); // free array of frames
+        s->size = 0; // zero out the other fields of s
+        s->capacity = 0;
+    }
 }
 
 
