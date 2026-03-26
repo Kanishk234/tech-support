@@ -80,8 +80,6 @@ int count_nodes(Node *root) {
 /* TODO 5 */
 void fs_init(FrameStack *s) {
     if (s != NULL) {
-        // create the pointer? do nothing for now ig
-        // return;
         s->frames = (Frame*) malloc(10 * sizeof(Frame));
         if (s->frames == NULL) { return; }
         s->size = 0;
@@ -137,25 +135,53 @@ void fs_free(FrameStack *s) {
 
 /* TODO 10 */
 void es_init(EditStack *s) {
+    if (s != NULL) {
+        s->edits = (Edit*) malloc(10 * sizeof(Edit));
+        if (s->edits == NULL) { return; }
+        s->size = 0;
+        s->capacity = 10; // default value to begin with
+    }  
 }
 
 /* TODO 11 */
 void es_push(EditStack *s, Edit e) {
+    if (s == NULL || s->edits == NULL) { return; }
+
+    if (s->size == s->capacity) {
+        // copy array and increases capacity
+        Edit* moreEdits = (Edit*) realloc(s->edits, 2*s->capacity*sizeof(Edit));
+        // if realloc fails
+        if (moreEdits == NULL) { return; } 
+        s->edits = moreEdits;
+        s->capacity *= 2;
+    }
+    s->edits[s->size] = e;
+    s->size++;
 }
 
 /* TODO 12 */
 Edit es_pop(EditStack *s) {
     Edit dummy = {0};
-    return dummy;
+    // if edistack is null or if editstack is empty
+    if (s == NULL || s->size <= 0) { return dummy; }
+    // if the edits array ptr is null
+    if (s->edits == NULL) { return dummy; }
+
+    s->size--; 
+    Edit popped = s->edits[s->size];
+    return popped;
 }
 
 /* TODO 13 */
 int es_empty(EditStack *s) {
-    return 1;
+    return (s == NULL || s->size <= 0) ? 1 : 0;
 }
 
 /* TODO 14 */
 void es_clear(EditStack *s) {
+    if (s != NULL) {
+        s->size = 0;
+    }
 }
 
 /* provided -- do not modify */
