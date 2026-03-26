@@ -199,24 +199,72 @@ void free_edit_stack(EditStack *s) { es_free(s); }
 
 /* TODO 15 */
 void q_init(Queue *q) {
+    if (q != NULL) {
+        q->front = NULL;
+        q->rear = NULL;
+        q->size = 0;
+    }
 }
 
 /* TODO 16 */
 void q_enqueue(Queue *q, Node *node, int id) {
+    if (q != NULL) {
+        QueueNode* newRear = (QueueNode*) malloc(sizeof(QueueNode));
+        if (newRear == NULL) { return; }
+        newRear->treeNode = node;
+        newRear->id = id;
+        newRear->next = NULL;
+
+        // if there is no current rear (and front)
+        if (q->rear == NULL) { 
+            q->front = newRear;
+            q->rear = newRear;
+            q->size++;
+            return;
+        }
+        // when there is an existing rear
+        q->rear->next = newRear;
+        q->rear = newRear;
+        q->size++;
+    }
 }
 
 /* TODO 17 */
 int q_dequeue(Queue *q, Node **node, int *id) {
-    return 0;
+    if (q == NULL || q->front == NULL || q->size <= 0) { return 0; }
+
+    *node = q->front->treeNode;
+    *id = q->front->id;
+    QueueNode* oldFront = q->front;
+    q->front = oldFront->next;
+    free(oldFront);
+    q->size--;
+
+    // special case when dequeueing from previous queue of size 1
+    if (q->size == 0) {
+        q->rear = q->front;
+    }
+    return 1;
 }
 
 /* TODO 18 */
 int q_empty(Queue *q) {
-    return 1;
+    return (q == NULL || q->size <= 0) ? 1 : 0;
 }
 
 /* TODO 19 */
 void q_free(Queue *q) {
+    if (q != NULL && q->front != NULL) {
+        QueueNode* curr = q->front;
+        while (curr != NULL) {
+            QueueNode* temp = curr;
+            curr = curr->next;
+            free(temp);
+        }
+        q->front = NULL;
+        q->rear = NULL;
+        q->size = 0;
+    }
 }
 
 
