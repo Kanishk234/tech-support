@@ -279,34 +279,224 @@ void q_free(Queue *q) {
  */
 char *canonicalize(const char *s) {
     if (s == NULL) return strdup("");
-    return NULL;
+    
+    // key at most will be as long as original string
+    char* filtered = (char*) malloc((strlen(s)+1) * sizeof(char));
+    if (filtered == NULL) { return NULL; }
+
+    int fIndex = 0;
+    for (int i = 0; i < strlen(s); i++) {
+        if (s[i] == ' ') { 
+            filtered[fIndex] = '_';
+            fIndex++;
+            continue;
+        }
+        if (s[i] >= 'A' && s[i] <= 'Z') {
+            filtered[fIndex] = s[i] + 32;
+            fIndex++;
+            continue;
+        }
+        if (s[i] >= 'a' && s[i] <= 'z') {
+            filtered[fIndex] = s[i];
+            fIndex++;
+            continue;
+        }
+    }
+    filtered[fIndex] = 0; // add the null terminator
+    fIndex++; // now fIndex has total size including null terminator
+    char* temp = realloc(filtered, fIndex*sizeof(char));
+    if (temp == NULL) {
+        free(filtered);
+        return NULL;
+    }
+    filtered = temp;
+    return filtered;
 }
 
 /* TODO 21  (djb2: hash = hash*33 + c, seed 5381) */
 unsigned h_hash(const char *s) {
-    return 0;
+    if (s == NULL) { return 0; } // error code when string ptr is null
+    unsigned hash = 5381;
+    for (int i = 0; i < strlen(s); i++) {
+        hash *= 33;
+        hash += s[i];
+    }
+    return hash;
 }
 
 /* TODO 22 */
 void h_init(Hash *h, int nbuckets) {
+    if (h == NULL) { return; }
+    // buckets is a ptr to an array of entry ptrs
+    h->buckets = (Entry**) malloc(nbuckets * sizeof(Entry*));
+    if (h->buckets == NULL) { return; }
+    // set all of the entry ptrs in array to null
+    for (int i = 0; i < nbuckets; i++) {
+        h->buckets[i] = NULL;
+    }
+    h->nbuckets = nbuckets;
+    h->size = 0;
 }
 
 /* TODO 23 */
 int h_put(Hash *h, const char *key, int solutionId) {
-    return 0;
+    if (h == NULL || key == NULL) { return 0; }
+
+    char* canonicalizedKey = canonicalize(key);
+    if (canonicalizedKey == NULL) { return 0; }
+    unsigned hashOfStr = h_hash(canonicalizedKey);
+
+    // if key id pair exists already
+    if (h_contains(h, key, solutionId) == 1) {
+        free(canonicalizedKey);
+        return 0;
+    }
+
+    int outCount = 0;
+    h_get_ids(h, key, &outCount);
+
+    // if key exists, but id doesnt exist, but id list is not empty
+    if (outCount != 0) {
+        Entry* correctEntry = h->buckets[hashOfStr % h->nbuckets];
+        while(strcmp(correctEntry->key, canonicalizedKey) != 0) {
+            correctEntry = correctEntry->next;
+        }
+
+        if (outCount == correctEntry->vals.capacity) {
+            int* newIds = (int*) realloc(correctEntry->vals.ids, 2*correctEntry->vals.capacity*sizeof(int));
+            if (newIds == NULL) { return 0; }
+            correctEntry->vals.ids = newIds;
+            correctEntry->vals.capacity = 2*correctEntry->vals.capacity;
+
+        }
+
+        correctEntry->vals.ids[correctEntry->vals.count++] = solutionId;
+        free(canonicalizedKey);
+        return 1;
+    }
+
+    // if key doesnt even exist 
+    Entry* entryToAdd = (Entry*) malloc(sizeof(Entry));
+    if (entryToAdd == NULL) {
+        free(canonicalizedKey);
+        return 0;
+    }
+
+    entryToAdd->key = (char*) malloc((strlen(canonicalizedKey)+1) * sizeof(char));
+    if (entryToAdd->key == NULL) {
+        free(entryToAdd);
+        free(canonicalizedKey);
+        return 0;
+    }
+    strcpy(entryToAdd->key, canonicalizedKey);
+    entryToAdd->next = NULL;
+
+    entryToAdd->vals.ids = (int*) malloc(5 * sizeof(int));
+    if (entryToAdd->vals.ids == NULL) {
+        free(entryToAdd->key);
+        free(entryToAdd);
+        free(canonicalizedKey);
+        return 0;
+    }
+    entryToAdd->vals.count = 0;
+    entryToAdd->vals.ids[entryToAdd->vals.count++] = solutionId;
+    entryToAdd->vals.capacity = 5;
+
+    // traversal to add the entry back
+    Entry* prev = h->buckets[hashOfStr % h->nbuckets];
+    if (prev != NULL) {
+        while (prev->next != NULL) {
+            prev = prev->next;
+        }
+        prev->next = entryToAdd;
+    } else {
+        h->buckets[hashOfStr % h->nbuckets] = entryToAdd;
+    }
+    h->size++;
+    free(canonicalizedKey);
+    return 1;
 }
 
 /* TODO 24 */
 int h_contains(const Hash *h, const char *key, int solutionId) {
-    return 0;
+    if (h == NULL || key == NULL) { return 0; }
+
+    char* canonicalizedKey = canonicalize(key);
+    if (canonicalizedKey == NULL) { return 0; }
+    unsigned hashOfStr = h_hash(canonicalizedKey);
+
+    Entry* entryToSearch = h->buckets[hashOfStr % h->nbuckets];
+    while (entryToSearch != NULL) {
+        if (strcmp(canonicalizedKey, entryToSearch->key) != 0) {
+            entryToSearch = entryToSearch->next;
+        } else {
+            break;
+        }
+    }
+
+    free(canonicalizedKey);
+    if (entryToSearch == NULL) {    
+        return 0; 
+    }
+
+    for (int i = 0; i < entryToSearch->vals.count; i++) {
+        if (entryToSearch->vals.ids[i] == solutionId) {
+            return 1;
+        }
+    }
+    return 0;    
 }
 
 /* TODO 25 */
 int *h_get_ids(const Hash *h, const char *key, int *outCount) {
-    *outCount = 0;
-    return NULL;
+    if (h == NULL || key == NULL) { 
+        *outCount = 0;
+        return NULL; 
+    }
+
+    char* canonicalizedKey = canonicalize(key);
+    if (canonicalizedKey == NULL) { 
+        *outCount = 0;
+        return NULL; 
+    }
+    unsigned hashOfStr = h_hash(canonicalizedKey);
+
+    Entry* entryToSearch = h->buckets[hashOfStr % h->nbuckets];
+    while (entryToSearch != NULL) {
+        if (strcmp(canonicalizedKey, entryToSearch->key) != 0) {
+            entryToSearch = entryToSearch->next;
+        } else {
+            break;
+        }
+    }
+
+    free(canonicalizedKey);
+    if (entryToSearch == NULL) { 
+        *outCount = 0;
+        return NULL; 
+    } else {
+        *outCount = entryToSearch->vals.count;
+        return entryToSearch->vals.ids;
+    }
 }
 
 /* TODO 26 */
 void h_free(Hash *h) {
+    if (h != NULL) {
+        for (int i = 0; i < h->nbuckets; i++) {
+            Entry* entryToFree = h->buckets[i];
+            while (entryToFree != NULL) {
+                free(entryToFree->key);
+                free(entryToFree->vals.ids);
+                Entry* prev = entryToFree;
+                entryToFree = entryToFree->next;
+                free(prev);
+            }
+
+        }
+
+        h->nbuckets = 0;
+        h->size = 0;
+        free(h->buckets);
+    }
 }
