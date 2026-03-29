@@ -15,6 +15,38 @@ extern Node *g_root;
  * Return 1 if valid, 0 if any violation is found.
  * ---------------------------------------------------------------- */
 int check_integrity(void) {
+    Queue q;
+    q_init(&q);
+    q_enqueue(&q, g_root, 0); // idk what to put for id
+
+    while (!q_empty(&q)) {
+        // dequeue parent 
+        Node* temp;
+        int tempId;
+        int success = q_dequeue(&q, &temp, &tempId); // again idk what id to put
+        if (success == 0) { /*what do i do*/ }
+
+        // check its integrity
+        if (temp != NULL) {
+            if (temp->isQuestion == 1) {
+                if (temp->yes == NULL || temp->no == NULL) {
+                    q_free(&q);
+                    return 0;
+                }
+            } else {
+                if (temp->yes != NULL || temp->no != NULL) {
+                    q_free(&q);
+                    return 0;
+                }
+            }
+
+            // enqueue children
+            q_enqueue(&q, temp->yes, 0);
+            q_enqueue(&q, temp->no, 0);
+        }
+    }
+
+    q_free(&q);
     return 1;
 }
 
