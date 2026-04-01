@@ -184,7 +184,8 @@ void test_integrity(void) {
     Node *saved = g_root; g_root = root;
     assert(check_integrity());
 
-    root->no = NULL;
+    free_tree(root->no);
+    root->no = NULL; // never freed the old root->no
     assert(!check_integrity());
 
     root->no = create_solution_node("S2");
