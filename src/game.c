@@ -44,7 +44,103 @@ void run_diagnosis(void) {
     fs_init(&stack);
 
     /* TODO: implement */
+    fs_push(&stack, g_root, -1);
 
+    Node* parent = NULL;
+    int parentAnsweredYes = -1;
+
+    int row = 6;
+    while (fs_empty(&stack) != 1) {
+        clear();
+        row = 2;
+        Frame popped = fs_pop(&stack);
+        Node* curr = popped.node;
+        if (curr == NULL) { continue; }
+
+        if (curr->isQuestion == 1) { // improve error checking
+            // printing but need to check that it does it right
+            mvprintw(2, 2, "%s", curr->text);
+            refresh();
+            // get yes/no from user
+            int answer = get_yes_no(4, 2, "Your answer (y/n): ");
+            // push yes or no child accordingly
+            Node* child = (answer == 1) ? curr->yes : curr->no;
+            fs_push(&stack, child, answer);
+            // update parent tracking
+            parent = curr;
+            parentAnsweredYes = answer;
+        } else {
+            mvprintw(row, 2, "Suggested fix: %s", curr->text);
+            row++;
+            int solved = get_yes_no(row, 2, "Did this solve your problem? (y/n): ");
+            row++;
+            if (solved == 1) { 
+                fs_free(&stack); 
+                return; 
+            }
+
+            // teach the tree a new thing
+            // get new solution text from user
+            char* input = get_input(row, 2, "What would fix this problem? ");
+            if (input == NULL || strcmp(input, "") == 0) { fs_free(&stack); return; }
+            char newSolution[256]; // 255 char limit
+            strncpy(newSolution, input, 255);
+            newSolution[255] = 0; // setting null terminator
+            row++;
+
+            // get distinguishing question from user
+            input = get_input(row, 2, "Give me a yes/no question that distinguishes your problem: ");
+            if (input == NULL || strcmp(input, "") == 0) { fs_free(&stack); return; }
+            char newQuestion[256];
+            strncpy(newQuestion, input, 255);
+            newQuestion[255] = 0;
+            row++;
+
+            // get which answer applies to user's problem
+            int userAnswer = get_yes_no(row, 2, "For your problem, is the answer yes or no? (y/n): ");
+            row++;
+
+            // create new nodes
+            Node* newSolutionNode = create_solution_node(newSolution);
+            if (newSolutionNode == NULL) { fs_free(&stack); return; }
+
+            Node *newQuestionNode = create_question_node(newQuestion);
+            if (newQuestionNode == NULL) { free(newSolutionNode); fs_free(&stack); return; }
+
+            // connect new solution into the question node based on yes or no answer
+            if (userAnswer == 1) {
+                newQuestionNode->yes = newSolutionNode;
+                newQuestionNode->no = curr;
+            } else {
+                newQuestionNode->yes = curr;
+                newQuestionNode->no = newSolutionNode;
+            }
+
+            // insert that new question node into the existing tree (knowledge base)
+            if (parent == NULL) {
+                g_root = newQuestionNode;
+            } else if (parentAnsweredYes == 1) {
+                parent->yes = newQuestionNode;
+            } else {
+                parent->no = newQuestionNode;
+            }
+
+            // build and push the new change to the tree on to the undo stack
+            Edit e;
+            e.type = EDIT_INSERT_SPLIT;
+            e.parent = parent;
+            e.wasYesChild = parentAnsweredYes;
+            e.oldLeaf = curr;
+            e.newQuestion = newQuestionNode;
+            e.newLeaf = newSolutionNode;
+            es_push(&g_undo, e);
+
+            // clear redo stack since new edit overrides redo history
+            es_clear(&g_redo);
+            fs_free(&stack);
+            return;
+        }
+    }
     fs_free(&stack);
 }
 
