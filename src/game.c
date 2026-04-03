@@ -53,7 +53,19 @@ void run_diagnosis(void) {
  * Return 1 on success, 0 if the undo stack is empty.
  * ---------------------------------------------------------------- */
 int undo_last_edit(void) {
-    return 0;
+    // pop off undo stack
+    if (es_empty(&g_undo) == 1) { return 0; }
+    Edit lastEdit = es_pop(&g_undo);
+    if (lastEdit.parent == NULL) { // no parent node at all so root gets replaced
+        g_root = lastEdit.oldLeaf;  
+    } else if (lastEdit.wasYesChild) {
+        lastEdit.parent->yes = lastEdit.oldLeaf;
+    } else {
+        lastEdit.parent->no = lastEdit.oldLeaf;
+    }
+    // push on to redo stack
+    es_push(&g_redo, lastEdit);
+    return 1;
 }
 
 /* ----------------------------------------------------------------
@@ -61,5 +73,17 @@ int undo_last_edit(void) {
  * Return 1 on success, 0 if the redo stack is empty.
  * ---------------------------------------------------------------- */
 int redo_last_edit(void) {
-    return 0;
+    // pop off redo stack
+    if (es_empty(&g_redo) == 1) { return 0; }
+    Edit lastEdit = es_pop(&g_redo);
+    if (lastEdit.parent == NULL) {
+        g_root = lastEdit.newQuestion;
+    } else if (lastEdit.wasYesChild) {
+        lastEdit.parent->yes = lastEdit.newQuestion;
+    } else {
+        lastEdit.parent->no = lastEdit.newQuestion;
+    }
+    // push on to redo stack
+    es_push(&g_undo, lastEdit);
+    return 1;
 }
