@@ -19,6 +19,7 @@ typedef struct PathNode {
  * Return 1 if valid, 0 if any violation is found.
  * ---------------------------------------------------------------- */
 int check_integrity(void) {
+    if (g_root == NULL) { return 1; }
     Queue q;
     q_init(&q);
     q_enqueue(&q, g_root, 0); // idk what to put for id
