@@ -285,7 +285,7 @@ char *canonicalize(const char *s) {
     if (filtered == NULL) { return NULL; }
 
     int fIndex = 0;
-    for (int i = 0; i < strlen(s); i++) {
+    for (size_t i = 0; i < strlen(s); i++) {
         if (s[i] == ' ') { 
             filtered[fIndex] = '_';
             fIndex++;
@@ -317,7 +317,7 @@ char *canonicalize(const char *s) {
 unsigned h_hash(const char *s) {
     if (s == NULL) { return 0; } // error code when string ptr is null
     unsigned hash = 5381;
-    for (int i = 0; i < strlen(s); i++) {
+    for (size_t i = 0; i < strlen(s); i++) {
         hash *= 33;
         hash += s[i];
     }
