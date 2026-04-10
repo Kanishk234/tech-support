@@ -87,12 +87,13 @@ The average-case of a hash table lookup in `h_contains` and `h_get_ids` is `O(1)
 
 ## Section 5 — Reflection (3–5 sentences)
 
-Answer at least two:
+### What was the hardest part and why?
 
-- What was the hardest part and why?
-- What did the iterative diagnosis loop teach you about recursion?
-- What would you do differently if starting over?
-- Was there a moment something clicked? What was it?
+The hardest part was implementing `save_tree` and `load_tree` correctly. The challenge wasn't the file I/O syntax itself but getting the ID scheme and linking right. Specifically, it was ensuring that the ID assigned to each child node when written to the file exactly matched the ID enqueued into the BFS queue, so that the second pass in `load_tree` could link nodes correctly. A subtle off by one erro in when `nextID` was incremented versus when it was passed to `q_enqueue` caused the entire tree structure to load corrupted, and debugging a binary file with no human-readable format made it difficult to pinpoint the issue.
+
+### What would you do differently if starting over?
+
+I would define a consistent error handling strategy before writing any code rather than adding it incrementally. Most of the bugs I encountered weren't in the core logic because they were in error paths. Some notable examples I had were forgetting to null both `front` and `rear` on last dequeue, not freeing canonicalized strings after `h_put`, and not closing the file on every early return in `save_tree`. Having a checklist of what needs to be cleaned up on failure for each function before writing it would have caught several of these issues immediately instead of during valgrind or other testing.
 
 ---
 
