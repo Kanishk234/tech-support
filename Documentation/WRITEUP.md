@@ -110,8 +110,9 @@ I would define a consistent error handling strategy before writing any code rath
 | 3-29-26 | 4 | TODOs 27-28 (Persistence) |
 | 4-1-26 | 4 | TODO 30 (Shortest Path) |
 | 4-3-26 | 1 | TODOs 32-33 (Undo and Redo) |
-| 4-3-26 | 3 | TODO 30 (Run Diagnosis) |
+| 4-3-26 | 3 | TODO 31 (Run Diagnosis) |
 | 4-9-26 | 1.5 | Tested the tool and built knowledge base |
+| 4-10-26 | 1.5 | Refactored TODO 30 (Shortest Path) to use recursion |
 | 4-10-26 | 2 | Completed the write up |
 
-**Total hours:** 27
+**Total hours:** 28.5
