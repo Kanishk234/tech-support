@@ -138,6 +138,7 @@ int  check_integrity(void);
 void find_shortest_path(const char *sol1, const char *sol2);
 
 /* ========== Diagnosis Session ========== */
+void index_tree(Node *node);
 void run_diagnosis(void);
 
 /* ========== Visualization ========== */

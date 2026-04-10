@@ -180,5 +180,6 @@ int load_tree(const char *filename) {
     free_tree(g_root);
     g_root = flatArray[0];
     fclose(f);
+    index_tree(g_root);
     return 1;
 }
