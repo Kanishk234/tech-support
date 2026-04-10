@@ -45,6 +45,10 @@ The average-case of a hash table lookup in `h_contains` and `h_get_ids` is `O(1)
 
 ### 2.4 — `find_shortest_path` time and space
 
+The time complexity of `find_shortest_path` is `O(n)`. The main cost comes from the two DFS calls. Each call walks the tree looking for a target solution node. In the worst case, the target is the very last node visited, which means the DFS explored all `n` nodes before finding it. Since we call DFS twice, that is `2n` node visits total, which simplifies to `O(n)`. After both paths are found, we scan through them simultaneously to see where they diverge. This scan is bounded by the height of the tree h, since paths can be at most as long as the tree is tall. In a balanced tree h is log n, but in the worst case of a completely skewed tree it could be n. The two paths are at most the height of the tree (generally log n, but worst case n), so traversing the paths will result in `O(log n)` or `O(n)` worst case. Either way, `O(log n)` is dominated by the `O(n)` DFS time complexity. Everything else like the divergence print, and the check for branch direction is constant or constrained by the height of the tree, so the overall time complexity is `O(n)`.
+
+The space complexity is `O(n)`. The two path arrays `pathForSol1` and `pathForSol2` are each allocated with size `count_nodes(g_root)` giving `O(n)` space each. The recursive DFS stack frames adds `O(log n)` space for the recursion depth, which is `O(log n)` for a balanced tree and `O(n)` for the worst case tree. The dominant term is the path arrays at `O(n)` because `n` is greater than `log n`, so overall space is `O(n)`.
+
 ---
 
 ## Section 3 — Bugs (two required)
