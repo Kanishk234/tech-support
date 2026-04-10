@@ -42,6 +42,7 @@ void run_diagnosis(void) {
 
     FrameStack stack;
     fs_init(&stack);
+    index_tree(g_root);
 
     /* TODO: implement */
     fs_push(&stack, g_root, -1);
@@ -96,6 +97,29 @@ void run_diagnosis(void) {
             newQuestion[255] = 0;
             row++;
 
+            // check if question already exists in hash table
+            char *words = strdup(newQuestion);
+            char *tokens = strtok(words, " ");
+            int duplicate = 0;
+            while (tokens != NULL) {
+                char *canon = canonicalize(tokens);
+                if (canon != NULL && h_get_ids(&g_index, canon, &(int){0}) != NULL) {
+                    duplicate = 1;
+                    free(canon);
+                    break;
+                }
+                free(canon);
+                tokens = strtok(NULL, " ");
+            }
+            free(words);
+            if (duplicate) {
+                mvprintw(row, 2, "A similar question already exists. Try rephrasing.\n\n  Press any key to go back to the home screen...");
+                refresh();
+                getch();
+                fs_free(&stack);
+                return;
+            }
+
             // get which answer applies to user's problem
             int userAnswer = get_yes_no(row, 2, "For your problem, is the answer yes or no? (y/n): ");
             row++;
@@ -137,11 +161,48 @@ void run_diagnosis(void) {
 
             // clear redo stack since new edit overrides redo history
             es_clear(&g_redo);
+
+            // index new question words in hash table
+            // int newLeafId = 0;
+            // assign ID by counting nodes up to newSolutionNode (simple approach: use bfsCount)
+            char *qwords = strdup(newQuestion);
+            char *tok = strtok(qwords, " ");
+            while (tok != NULL) {
+                char *canon = canonicalize(tok);
+                if (canon != NULL) {
+                    h_put(&g_index, canon, count_nodes(g_root));
+                    free(canon);
+                }
+                tok = strtok(NULL, " ");
+            }
+            free(qwords);
+
             fs_free(&stack);
             return;
         }
     }
     fs_free(&stack);
+}
+
+// helper function to index the tree
+void index_tree(Node *node) {
+    if (node == NULL) return;
+    if (node->isQuestion == 1) {
+        char *words = strdup(node->text);
+        if (words == NULL) return;
+        char *tok = strtok(words, " ");
+        while (tok != NULL) {
+            char *canon = canonicalize(tok);
+            if (canon != NULL) {
+                h_put(&g_index, canon, count_nodes(node));
+                free(canon);
+            }
+            tok = strtok(NULL, " ");
+        }
+        free(words);
+        index_tree(node->yes);
+        index_tree(node->no);
+    }
 }
 
 /* ----------------------------------------------------------------
