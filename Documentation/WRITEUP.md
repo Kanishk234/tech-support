@@ -81,11 +81,19 @@ The space complexity is `O(n)`. The two path arrays `pathForSol1` and `pathForSo
 
 1. How many nodes does your submitted `techsupport.dat` contain?
 
+The submitted `techsupport.dat` contains 33 nodes.
+
 2. What categories of problems did you teach the program? Give one example question/solution pair for each category.
+
+The tree covers two main categories. The network branch handles connectivity issues. For example, the question "Are you connected to Wi-Fi but have no internet?" leads to the solution "Open cmd and run: ipconfig /flushdns, then try browsing again." The non-network branch handles hardware and software issues. For example, "Is the screen flickering or showing artifacts?" leads to a solution of "Check display cable connection or try a different monitor cable."
 
 3. Look at the tree with `[V]`.  Are the questions you taught it good distinguishing questions — do they split the remaining candidates roughly in half?  Name one question you would improve and describe what you would replace it with.
 
+The network side of the tree splits fairly well early on by separating Wi-Fi from wired connections and then DNS issues are split from physical hardware issues. The non-network side is weaker though. The question "Is it a display or screen issue?" is broad and only splits one specific problem off from everything else, leaving a long chain of unrelated problems under the NO branch. A better replacement would be something like "Is the problem hardware-related (monitor, printer, keyboard)?" which would split the remaining candidates more evenly between hardware and software issues.
+
 4. Describe one `[F]ind Path` result.  What were the two solutions, what was the shared path, and did the output match your expectation?
+
+Running `Find Path` between "Run: ipconfig /flushdns" and "Check all ethernet cables, replace if damaged, reseat both ends" showed a shared path through the root question "Is the problem with a network device?" and then "Are you connected to Wi-Fi but have no internet?". The DNS fix was the solution if YES and the ethernet fix was the solution if NO. This matched expectations since both are network problems but one is wireless and one is wired, so they should diverge at this exact question.
 
 ---
 
