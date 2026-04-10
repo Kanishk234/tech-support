@@ -68,6 +68,7 @@ int check_integrity(void) {
  * Display results with mvprintw.  Print an error if either
  * solution is not found.  Free all allocations before returning.
  * ---------------------------------------------------------------- */
+int dfs(Node* node, const char* target, Node* path[], int* len); // forward declaration
 void find_shortest_path(const char *sol1, const char* sol2) {
     int row = 10;
     if (g_root == NULL || sol1 == NULL || sol2 == NULL) {

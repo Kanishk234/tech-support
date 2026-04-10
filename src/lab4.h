@@ -136,7 +136,6 @@ int load_tree(const char *filename);
 /* ========== Utilities ========== */
 int  check_integrity(void);
 void find_shortest_path(const char *sol1, const char *sol2);
-int dfs(Node* node, const char* target, Node* path[], int* len);
 
 /* ========== Diagnosis Session ========== */
 void run_diagnosis(void);
