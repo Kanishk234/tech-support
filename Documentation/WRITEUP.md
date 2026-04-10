@@ -35,7 +35,11 @@ Show the reasoning, not just the answer.
 
 ### 2.1 — Amortized cost of a single FrameStack push
 
+The overall amortized cost of a single FrameStack push is `O(1)`. In most cases, pushing onto the stack requires a simple array access, which has constant runtime. Occassionally, there will be instances where the array will have to expand in capacity, which will result in a realloc that has `O(n)` time. Over the sequence of several push operations, the occassional `O(n)` realloc will spread out over the many `O(1)` pushes, resulting in an amortized cost of `O(1)` for a single FrameStack push.
+
 ### 2.2 — Hash table average-case lookup
+
+The average-case of a hash table lookup in `h_contains` and `h_get_ids` is `O(1)`. Both functions first canonicalize the key and compute `h_hash(canonicalizedKey) % h->nbuckets` to find the bucket in constant time. They then traverse the chain in that bucket using a while loop to compare keys until a match is found. The average chain length is n/m where n is the number of keys and m is the number of buckets. The djb2's uniform hashing also tends to prevent clustering, so chains stay short on average, allowing `O(1)` lookup. In the worst case where all keys hash to the same bucket, the chain traversal gets downgraded to `O(n)`.
 
 ### 2.3 — Diagnosis traversal (best, worst, average)
 
@@ -47,7 +51,7 @@ Show the reasoning, not just the answer.
 
 ### 3.A — Undefined behavior when dequeueing from a Queue of size 1
 
-*Symptom:* The pogram crashed or sometimes produced garbage values after dequeuing the last element from the queue, which led BFS traversal to behave incorrectly.
+*Symptom:* The program crashed or sometimes produced garbage values after dequeuing the last element from the queue, which led BFS traversal to behave incorrectly.
 
 *Cause:*  In `q_dequeue`, after assigning `q->front = oldFront->next`, `q->rear` still pointed to the freed node when the queue becomes empty. Any future enqueue's would then lead to undefined behavior because it would write to a dangling rear pointer.
 
@@ -96,15 +100,17 @@ Answer at least two:
 
 | Date | Hours | What you worked on |
 |------|-------|--------------------|
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
-| | | |
+| 3-25-26 | 1.5 | TODOs 1-4 (Tree) |
+| 3-26-26 | 2 | TODOs 5-9 (FrameStack) |
+| 3-26-26 | 1 | TODOs 10-14 (EditStack) |
+| 3-27-26 | 2.5 | TODOs 15-19 (Queue) |
+| 3-27-26 | 3.5 | TODOs 20-26 (Hash Table) |
+| 3-28-26 | 1 | TODO 29 (Integrity Check) |
+| 3-29-26 | 4 | TODOs 27-28 (Persistence) |
+| 4-1-26 | 4 | TODO 30 (Shortest Path) |
+| 4-3-26 | 1 | TODOs 32-33 (Undo and Redo) |
+| 4-3-26 | 3 | TODO 30 (Run Diagnosis) |
+| 4-9-26 | 1.5 | Tested the tool and built knowledge base |
+| 4-10-26 | 2 | Completed the write up |
 
-**Total hours:** ___
+**Total hours:** 27
