@@ -500,3 +500,18 @@ void h_free(Hash *h) {
         free(h->buckets);
     }
 }
+
+// helper function to index the tree
+void index_tree(Node *node) {
+    if (node == NULL) return;
+    if (g_index.nbuckets == 0) return;
+    if (node->isQuestion == 1) {
+        char *canon = canonicalize(node->text);
+        if (canon != NULL) {
+            h_put(&g_index, canon, count_nodes(node));
+            free(canon);
+        }
+        index_tree(node->yes);
+        index_tree(node->no);
+    }
+}
