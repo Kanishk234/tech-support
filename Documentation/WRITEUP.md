@@ -43,6 +43,17 @@ The average-case of a hash table lookup in `h_contains` and `h_get_ids` is `O(1)
 
 ### 2.3 — Diagnosis traversal (best, worst, average)
 
+There are two execution paths in `run_diagnosis` depending on whether the user confirms the suggested fix or not.
+
+#### Case 1 - Solution accepted (no learning phase) 
+The function traverses the tree using the FrameStack, visiting one node per question answered. The best case is `O(1)` if the root is a solution leaf. The average case is `O(log n)` for a proper tree, because every decision cuts the nodes to visit by half. The worst case is `O(n)` for a completely unbalanced tree where every question has one branch that's just NULL because that essentially acts as an array.
+
+#### Case 2 - Solution not present (learning phase executed)
+The tree traversal time complexity, on average, is the same `O(n)` as above, but the learning phase has a `count_nodes` call which traverses the entire tree to get the current node count for the hash table ID. This adds `O(n)` time complexity regardless of tree shape, making the overall complexity `O(n)` for best, average and worst cases. All of the other operations in the learning phase like `create_question_node`, `create_solution_node`, `canonicalize`, and `h_put` are negligible in comparison to `O(n)` from the `count_nodes`.
+
+#### Summary
+Overall, for just diagnosis tree traveral, the best case is `O(1)`, average case is `O(log n)`, and the worst case is `O(n)`. If the solution is accepted, average case is `O(log n)` for a proper tree. If the learning phase is executed, overall time complexity degrades to `O(n)` due to `count_nodes`. The `O(n)` complexity in the learning phase is a result of the choice to use `count_nodes` as an ID rather than keeping a running node counter.
+
 ### 2.4 — `find_shortest_path` time and space
 
 The time complexity of `find_shortest_path` is `O(n)`. The main cost comes from the two DFS calls. Each call walks the tree looking for a target solution node. In the worst case, the target is the very last node visited, which means the DFS explored all `n` nodes before finding it. Since we call DFS twice, that is `2n` node visits total, which simplifies to `O(n)`. After both paths are found, we scan through them simultaneously to see where they diverge. This scan is bounded by the height of the tree h, since paths can be at most as long as the tree is tall. In a balanced tree h is log n, but in the worst case of a completely skewed tree it could be n. The two paths are at most the height of the tree (generally log n, but worst case n), so traversing the paths will result in `O(log n)` or `O(n)` worst case. Either way, `O(log n)` is dominated by the `O(n)` DFS time complexity. Everything else like the divergence print, and the check for branch direction is constant or constrained by the height of the tree, so the overall time complexity is `O(n)`.
@@ -123,8 +134,8 @@ I would define a consistent error handling strategy before writing any code rath
 | 4-1-26 | 4 | TODO 30 (Shortest Path) |
 | 4-3-26 | 1 | TODOs 32-33 (Undo and Redo) |
 | 4-3-26 | 3 | TODO 31 (Run Diagnosis) |
-| 4-9-26 | 1.5 | Tested the tool and built knowledge base |
+| 4-9-26 | 3.5 | Tested the tool and built knowledge base |
 | 4-10-26 | 1.5 | Refactored TODO 30 (Shortest Path) to use recursion |
-| 4-10-26 | 2 | Completed the write up |
+| 4-10-26 | 4 | Completed the write up |
 
-**Total hours:** 28.5
+**Total hours:** 32.5
