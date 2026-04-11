@@ -8,7 +8,7 @@ extern Node      *g_root;
 extern EditStack  g_undo;
 extern EditStack  g_redo;
 extern Hash       g_index;
-
+void index_tree(Node *node);
 /* ----------------------------------------------------------------
  * TODO 31  run_diagnosis
  *

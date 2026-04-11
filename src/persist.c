@@ -5,6 +5,7 @@
 #include "lab4.h"
 
 extern Node *g_root;
+void index_tree(Node *node);
 
 #define MAGIC   0x54454348u   /* "TECH" */
 #define VERSION 1u
