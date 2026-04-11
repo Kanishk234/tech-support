@@ -71,17 +71,20 @@ int check_integrity(void) {
 int dfs(Node* node, const char* target, Node* path[], int* len); // forward declaration
 void find_shortest_path(const char *sol1, const char* sol2) {
     int row = 10;
+    // validate inputs and tree state
     if (g_root == NULL || sol1 == NULL || sol2 == NULL) {
         mvprintw(row, 2, "Error: one or both solutions not found.");
         refresh();
         return;
     }
 
+    // allocate path arrays with the size of the whole tree
     int size = count_nodes(g_root);
     Node* pathForSol1[size];
     Node* pathForSol2[size];
     int len1 = 0; int len2 = 0;
 
+    // find root-to-leaf path for each solution using DFS
     if (dfs(g_root, sol1, pathForSol1, &len1) == 0) {
         mvprintw(row, 2, "Error: one or both solutions not found.");
         refresh();
@@ -94,7 +97,9 @@ void find_shortest_path(const char *sol1, const char* sol2) {
     }
 
     int loopLen = (len1 < len2) ? len1 : len2;
-    int divergencePoint = loopLen-1;
+    int divergencePoint = loopLen-1; // divergencePoint is the index of the LCA in the path arrays
+
+    // scan both paths simultaneously from root to find where they diverge
     for (int i = 0; i < loopLen; i++) {
         if (strcmp(pathForSol1[i]->text, pathForSol2[i]->text) != 0) {
             divergencePoint = i-1;
@@ -102,23 +107,24 @@ void find_shortest_path(const char *sol1, const char* sol2) {
         }
     }
 
-    // header
+    // print header with solutions to be compared
     mvprintw(row++, 2, "Distinguishing path between:");
     mvprintw(row++, 4, "A: \"%s\"", sol1);
     mvprintw(row++, 4, "B: \"%s\"", sol2);
     row++;
 
-    // shared path
+    // print the shared path
     mvprintw(row++, 2, "Shared path (both solutions pass through):");
     for (int i = 0; i < divergencePoint; i++) {
         mvprintw(row++, 4, "%s", pathForSol1[i]->text);
     }
     row++;
 
-    // divergence point
+    // print the divergence point
     Node* LCA = pathForSol1[divergencePoint];
     mvprintw(row++, 2, "Divergence point (LCA):");
     mvprintw(row++, 4, "%s", LCA->text);
+    // check which branch of LCA leads to sol1 to determine YES and NO labels
     if (pathForSol1[divergencePoint+1] == LCA->yes) {
         mvprintw(row++, 6, "YES -> \"%s\"", sol1);
         mvprintw(row++, 6, "NO  -> \"%s\"", sol2);
@@ -130,20 +136,27 @@ void find_shortest_path(const char *sol1, const char* sol2) {
 }
 
 int dfs(Node* node, const char* target, Node* path[], int* len) {
+    // base case: null node means this branch doesn't contain the target
     if (node == NULL) {
         return 0;
     }
 
+    // add current node to path before exploring children
     path[*len] = node;
     (*len)++;
+
+    // check if this is the target solution leaf
     if (node->isQuestion == 0 && strcmp(target, node->text) == 0) {
         return 1;
     } else if (dfs(node->yes, target, path, len) == 1) {
+        // target found in yes subtree
         return 1;
     } else if (dfs(node->no, target, path, len) == 1) {
+        // target found in no subtree
         return 1;
     }
 
-    (*len)--; // backtrack the length
+    // target not found in this subtree, so revert the previous increment of len
+    (*len)--;
     return 0;
 }
