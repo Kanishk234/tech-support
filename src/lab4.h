@@ -24,6 +24,9 @@ Node *create_solution_node(const char *solution);
 void  free_tree(Node *node);
 int   count_nodes(Node *root);
 
+// other helpers
+void index_tree(Node *node);
+
 /* ========== Stack for Diagnosis Traversal ========== */
 typedef struct Frame {
     Node *node;
@@ -138,7 +141,6 @@ int  check_integrity(void);
 void find_shortest_path(const char *sol1, const char *sol2);
 
 /* ========== Diagnosis Session ========== */
-void index_tree(Node *node);
 void run_diagnosis(void);
 
 /* ========== Visualization ========== */
